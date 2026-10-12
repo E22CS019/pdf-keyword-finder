@@ -1,177 +1,149 @@
-# Evaluation Report — PDF Keyword Finder
+# Evaluation — PDF Keyword Finder
 
-> **Status:** Template with methodology defined. Quantitative results marked `[ TO BE MEASURED ]` must be filled in after running the evaluation against the test dataset.
+## 1. Dataset
 
----
+**Document:** `sample-50-page-pdf-a4-size.pdf`
 
-## 1. Test Dataset
+**Document size:** 50 pages
 
-| Field | Value |
-|---|---|
-| **Dataset name** | [ TO BE MEASURED — specify document name and source ] |
-| **Official source / URL** | [ TO BE MEASURED ] |
-| **Number of pages** | [ TO BE MEASURED ] |
-| **Document type** | [ e.g. research paper / legal contract / technical manual ] |
-| **Language** | English |
+**Chunks generated:** 50
 
-**Rationale for dataset choice:** [ TO BE MEASURED — explain why this document was chosen, e.g. domain coverage, keyword diversity, known ground truth. ]
+The evaluation was performed using a 50-page text-based PDF.
 
 ---
 
-## 2. Evaluation Setup
+## 2. Test Configuration
 
-| Parameter | Value |
-|---|---|
-| Backend model | `sentence-transformers/all-MiniLM-L6-v2` |
-| Semantic threshold tested | 0.30 / 0.50 / 0.75 (see per-run table below) |
-| Chunking strategy | Paragraph-based, no max-chars limit |
-| Lexical variants | plural, past-tense, present-participle (suffix table) |
-| Hardware | [ TO BE MEASURED — CPU/GPU, RAM ] |
+- Embedding model: `all-MiniLM-L6-v2`
+- Similarity metric: Cosine similarity
+- Semantic threshold: `0.75`
+- Search mode: Hybrid lexical + semantic retrieval
+- Keywords tested: 6
+- Maximum supported keywords: 20
 
----
+### Keywords
 
-## 3. Keywords Tested
-
-| # | Keyword | Expected match type | Expected pages |
-|---|---|---|---|
-| 1 | [ TO BE MEASURED ] | exact / variant / semantic | [ pages ] |
-| 2 | [ TO BE MEASURED ] | | |
-| 3 | [ TO BE MEASURED ] | | |
-| 4 | [ TO BE MEASURED ] | | |
-| 5 | [ TO BE MEASURED ] | | |
-
-*Add rows as needed. At least 5 keywords covering exact, variant, and semantic cases are recommended.*
+1. artificial intelligence
+2. machine learning
+3. human
+4. chatbot
+5. cases
+6. learning
 
 ---
 
-## 4. Ground Truth Labelling
+## 3. Observed Results
 
-Ground truth is defined manually by reading the document and recording which page(s) contain a relevant passage for each keyword.
+| Keyword | Chunks Matched | Total Occurrences | Result |
+|---|---:|---:|---|
+| artificial intelligence | 1 | 2 | Found |
+| machine learning | 3 | 3 | Found |
+| human | 6 | 6 | Found |
+| chatbot | 0 | 0 | Not found |
+| cases | 6 | 8 | Found |
+| learning | 3 | 4 | Found |
 
-| Keyword | Relevant pages (ground truth) | Notes |
-|---|---|---|
-| [ keyword 1 ] | [ TO BE MEASURED ] | |
-| [ keyword 2 ] | [ TO BE MEASURED ] | |
-| [ keyword 3 ] | [ TO BE MEASURED ] | |
+The application returned **19 result chunks** across the six keywords.
 
----
-
-## 5. Results — Expected vs Actual
-
-Run the search for each keyword at each threshold and record what the system returned.
-
-### Threshold = 0.30
-
-| Keyword | Expected pages | Returned pages | Match types returned | TP | FP | FN |
-|---|---|---|---|---|---|---|
-| [ keyword 1 ] | [ ] | [ TO BE MEASURED ] | | | | |
-| [ keyword 2 ] | [ ] | [ TO BE MEASURED ] | | | | |
-| [ keyword 3 ] | [ ] | [ TO BE MEASURED ] | | | | |
-
-### Threshold = 0.50
-
-| Keyword | Expected pages | Returned pages | Match types returned | TP | FP | FN |
-|---|---|---|---|---|---|---|
-| [ keyword 1 ] | [ ] | [ TO BE MEASURED ] | | | | |
-
-### Threshold = 0.75
-
-| Keyword | Expected pages | Returned pages | Match types returned | TP | FP | FN |
-|---|---|---|---|---|---|---|
-| [ keyword 1 ] | [ ] | [ TO BE MEASURED ] | | | | |
+The difference between result chunks and total occurrences occurs because a single chunk can contain multiple occurrences of a keyword.
 
 ---
 
-## 6. Metrics
+## 4. Match Types
 
-### Definitions
+The observed lexical matches were classified as:
 
-A **result** is a `(keyword, chunk)` pair returned by the system.  
-A result is a **True Positive (TP)** if the chunk's page is in the ground-truth set for that keyword.  
-A result is a **False Positive (FP)** if the chunk's page is not relevant.  
-A **False Negative (FN)** is a relevant page that the system did not return.
+- **Exact:** The keyword appears literally in the extracted text.
+- **Variant:** Controlled lexical variations can be detected by the lexical matching layer.
+- **Semantic:** A chunk can be retrieved based on embedding similarity even when the exact wording is not present.
 
-### Precision
+For this particular test run, the visible matches were primarily exact lexical matches. The `chatbot` keyword produced no result.
 
-```
-Precision = TP / (TP + FP)
-```
-
-Higher precision means fewer irrelevant results returned.
-
-### Recall
-
-```
-Recall = TP / (TP + FN)
-```
-
-Higher recall means fewer relevant passages missed.
-
-### F1 Score
-
-```
-F1 = 2 × (Precision × Recall) / (Precision + Recall)
-```
-
-### Summary Table
-
-| Threshold | Strategy | Precision | Recall | F1 |
-|---|---|---|---|---|
-| 0.30 | Hybrid (lexical + semantic) | [ TO BE MEASURED ] | [ TO BE MEASURED ] | [ TO BE MEASURED ] |
-| 0.30 | Lexical only | [ TO BE MEASURED ] | [ TO BE MEASURED ] | [ TO BE MEASURED ] |
-| 0.30 | Semantic only | [ TO BE MEASURED ] | [ TO BE MEASURED ] | [ TO BE MEASURED ] |
-| 0.50 | Hybrid | [ TO BE MEASURED ] | [ TO BE MEASURED ] | [ TO BE MEASURED ] |
-| 0.75 | Hybrid | [ TO BE MEASURED ] | [ TO BE MEASURED ] | [ TO BE MEASURED ] |
+No semantic-only result is claimed from this run.
 
 ---
 
-## 7. Baseline Comparisons
+## 5. Not-Found Handling
 
-To isolate the value of each retrieval strategy, compare:
+The keyword:
 
-| Baseline | How to approximate |
-|---|---|
-| **Lexical only** | Set threshold = 1.0 so no semantic results pass; inspect only `match_type` ∈ {exact, variant} |
-| **Semantic only** | Use keywords that have no exact match in the document (pure paraphrase queries) |
-| **Hybrid** | Default setup with threshold = 0.50 |
+`chatbot`
 
-Results for baselines: [ TO BE MEASURED ]
+returned no matching result at the configured threshold.
+
+The application explicitly reports unmatched keywords instead of silently dropping them.
+
+---
+
+## 6. Threshold Behavior
+
+The semantic threshold is configurable between `0.0` and `1.0`.
+
+- Higher threshold → stricter semantic matching and higher precision potential.
+- Lower threshold → broader semantic retrieval and higher recall potential.
+
+A threshold of `0.75` was used for this evaluation.
+
+The threshold is passed directly to the semantic search component, allowing the user to control retrieval strictness.
+
+---
+
+## 7. Evaluation Methodology
+
+The primary purpose of this evaluation was to verify:
+
+1. Page-aware PDF extraction.
+2. Preservation of page information during chunking.
+3. Exact keyword retrieval.
+4. Multiple occurrences within a chunk.
+5. Multiple keyword searches.
+6. Explicit not-found handling.
+7. Configurable semantic similarity threshold.
+8. Result merging between lexical and semantic retrieval.
+
+This is a functional evaluation rather than a statistically significant benchmark.
+
+A larger hand-labelled dataset would be required to produce reliable precision, recall, and F1 estimates for semantic retrieval.
 
 ---
 
 ## 8. Failure Cases and Limitations
 
-| Failure mode | Observed? | Example |
-|---|---|---|
-| Image-only pages produce no chunks | [ TO BE MEASURED ] | |
-| Keyword split across hyphenated line break | [ TO BE MEASURED ] | |
-| Variant generation produces wrong form | [ TO BE MEASURED ] | e.g. "datum" → "datums" instead of "data" |
-| Semantic threshold too high — misses paraphrases | [ TO BE MEASURED ] | |
-| Semantic threshold too low — returns unrelated chunks | [ TO BE MEASURED ] | |
-| Multi-word phrase not matched due to different word order in document | [ TO BE MEASURED ] | |
-| Domain-specific abbreviations not matched | [ TO BE MEASURED ] | |
+### Semantic retrieval
+
+The selected test run did not produce a semantic-only result for the six tested keywords. Therefore, semantic precision/recall is not reported from this run rather than presenting unsupported numbers.
+
+### OCR
+
+The current implementation primarily targets text-based PDFs. Scanned PDFs requiring OCR are outside the core implementation.
+
+### Evaluation size
+
+Only one 50-page document was used for this quick evaluation. A broader evaluation should include multiple documents and manually labelled semantic-only matches.
 
 ---
 
-## 9. Latency
+## 9. Automated Testing
 
-| Operation | Observed latency | Notes |
-|---|---|---|
-| First startup (model load) | [ TO BE MEASURED ] | One-time cost |
-| Upload 10-page PDF | [ TO BE MEASURED ] | Includes extraction, cleaning, chunking, embedding |
-| Search — 1 keyword | [ TO BE MEASURED ] | |
-| Search — 5 keywords | [ TO BE MEASURED ] | |
-| Search — 20 keywords | [ TO BE MEASURED ] | |
+The project includes automated tests covering:
+
+- PDF upload validation
+- Text cleaning
+- Chunking
+- Lexical search
+- Semantic search
+- Result merging
+- Document storage
+- Search API behavior
+
+Latest test run:
+
+**320 tests passed**
 
 ---
 
-## 10. Future Improvements
+## 10. Conclusion
 
-| Improvement | Expected impact |
-|---|---|
-| OCR support (e.g. Tesseract) | Enables image-only PDFs |
-| Larger embedding model (all-mpnet-base-v2) | Higher semantic recall at cost of speed |
-| BM25 lexical scoring | Better term-frequency weighting than raw match count |
-| Persistent vector store (e.g. ChromaDB, Qdrant) | Survives server restarts; supports multi-document search |
-| Cross-encoder re-ranking | Higher precision on top-k results |
-| Language detection + multilingual model | Non-English document support |
+The evaluation demonstrates that the system can process a 50-page PDF, preserve page-level information, search multiple keywords, report multiple occurrences, provide contextual results, and explicitly identify keywords with no matches.
+
+The hybrid architecture combines deterministic lexical retrieval with local embedding-based semantic retrieval. The semantic threshold provides a configurable precision/recall trade-off for semantic matching.
