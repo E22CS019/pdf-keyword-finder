@@ -1,0 +1,16 @@
+# Runtime dependencies
+fastapi==0.111.0
+uvicorn[standard]==0.29.0
+python-multipart==0.0.9          # multipart file uploads
+pdfplumber==0.11.0               # PDF text extraction
+pymupdf==1.24.2                  # alternative / fallback PDF parser
+sentence-transformers==2.7.0     # embedding generation
+numpy==1.26.4                    # vector operations
+scikit-learn==1.4.2              # cosine similarity utilities
+nltk==3.8.1                      # stemming and tokenisation for lexical search
+pydantic==2.7.1                  # data validation (bundled with FastAPI v0.111)
+
+# Development / testing
+pytest==8.2.0
+pytest-asyncio==0.23.6
+httpx>=0.28.1                    # async test client for FastAPI
